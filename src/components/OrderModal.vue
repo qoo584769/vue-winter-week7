@@ -107,7 +107,7 @@
                     type="checkbox"
                     value=""
                     id="flexCheckDefault"
-                    v-model="tempOrder.is_paid"
+                    v-model="tempOrderData.is_paid"
                   />
                   <label class="form-check-label" for="flexCheckDefault">
                     <span v-if="tempOrder.is_paid">已付款</span>
@@ -122,7 +122,7 @@
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" @click="closeModal">
             取消
           </button>
-          <button type="button" class="btn btn-primary" @click="$emit('update-paid', tempOrder)">
+          <button type="button" class="btn btn-primary" @click="updatePaid">
             修改付款狀態
           </button>
         </div>
@@ -132,13 +132,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref,  onMounted, watch } from 'vue'
 import Modal from 'bootstrap/js/dist/modal'
 
 const props = defineProps(['modalStatus', 'tempOrder'])
-const emits = defineEmits(['emitModalSataus'])
+const emits = defineEmits(['emitModalSataus','emitUpdatePaid'])
 
-const tempOrderData = reactive({...props.tempOrder})
+const tempOrderData = ref('')
 const modal = ref(null)
 
 const bsOrderModal = ref('')
@@ -152,23 +152,17 @@ const closeModal = () => {
   bsOrderModal.value.hide()
   emits('emitModalSataus', false)
 }
+const updatePaid = ()=>{
+  emits('emitUpdatePaid',tempOrderData.value)
+  closeModal()
+}
 watch(
   () => props.modalStatus,
   () => {
     if (props.modalStatus) {
       bsOrderModal.value.show()
-      console.log(props.tempOrder)
-      console.log(tempOrderData);
+      tempOrderData.value = props.tempOrder
       return
-      // axios
-      //   .get(`${url}/api/${path}/product/${props.id}`)
-      //   .then((res) => {
-      //     product.data = res.data.product;
-      //     bsModal.value.show();
-      //   })
-      //   .catch((err) => {
-      //     alert(err);
-      //   });
     } else {
       bsOrderModal.value.hide()
       return

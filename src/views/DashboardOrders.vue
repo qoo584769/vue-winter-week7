@@ -1,4 +1,5 @@
 <template>
+  <Loading v-model:active="isLoading"></Loading>
   <table class="table mt-4">
     <thead>
       <tr>
@@ -58,18 +59,20 @@
       </template>
     </tbody>
   </table>
-  <OrderModal :modalStatus="modalStatus" :tempOrder="tempOrderData.data" @emitModalSataus = openModal></OrderModal>
-  <DelModal :modalStatus="delModalStatus" :tempOrder="tempOrderData.data" @emitModalSataus = openDelOrderModal @emitDelItem = delOrder></DelModal>
+  <OrderModal :modalStatus="modalStatus" :tempOrder="tempOrderData.data" @emitModalSataus = "openModal" @emitUpdatePaid="updatePaid"></OrderModal>
+  <DelModal :modalStatus="delModalStatus" :tempOrder="tempOrderData.data" @emitModalSataus = "openDelOrderModal" @emitDelItem = "delOrder"></DelModal>
 </template>
 
 <script setup>
 import { ref, reactive, inject, onMounted } from 'vue'
+import Loading from 'vue-loading-overlay'
 import OrderModal from '../components/OrderModal.vue'
 import DelModal from '../components/DelModal.vue'
 
 // 註冊axios
 const axios = inject('axios')
-
+// loading變數
+const isLoading = ref(false)
 // 網址路徑
 const path = import.meta.env.VITE_PATH
 const url = import.meta.env.VITE_API
@@ -100,19 +103,21 @@ const openDelOrderModal = (item)=>{
 
 // 取得訂單列表
 const getOrders = (page = 1) => {
+  isLoading.value = true;
   axios
     .get(`${url}/api/${path}/admin/orders?${page}`)
     .then((res) => {
-      console.log(res)
       orders.data = res.data.orders
-      console.log(orders.data)
+      isLoading.value = false;
     })
     .catch((err) => {
-      console.log(err)
+      alert(err)
+      isLoading.value = false;
     })
 }
 // 修改付款狀態
 const updatePaid = (item)=>{
+  isLoading.value = true;
   const data = {...item}
   data.is_paid = item.is_paid
   axios
@@ -122,20 +127,24 @@ const updatePaid = (item)=>{
     })
     .catch((err) => {
       alert(err)
+      isLoading.value = false;
     })
 }
+
 const delOrder = (item)=>{
-  console.log(item);
+  isLoading.value = true;
   axios
     .delete(`${url}/api/${path}/admin/order/${item.id}`)
-    .then((res) => {
-      console.log(res);
+    .then(() => {
+      isLoading.value = false;
       getOrders()
     })
     .catch((err) => {
-      console.log(err)
+      alert(err)
+      isLoading.value = false;
     })
 }
+
 const filterDate = (timeStamp) => {
   const localDate = new Date(timeStamp * 1000)
   return localDate.toLocaleDateString()

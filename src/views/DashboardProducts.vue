@@ -1,4 +1,6 @@
 <template>
+  <Loading v-model:active="isLoading"></Loading>
+
   <div class="container">
     <div class="text-end mt-4">
       <button class="btn btn-primary" @click="openModal('create')">建立新的產品</button>
@@ -106,11 +108,14 @@
 import { ref, reactive, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Modal from 'bootstrap/js/dist/modal'
+import Loading from 'vue-loading-overlay'
 
 import MyModal from '../components/UandCModal.vue'
 import Pagination from '../components/ProductPagination.vue'
 
 const router = useRouter()
+// loading變數
+const isLoading = ref(false)
 // 網址路徑
 const path = import.meta.env.VITE_PATH
 const url = import.meta.env.VITE_API
@@ -132,11 +137,13 @@ const pagination = reactive({ data: {} })
 
 // 取得產品列表
 const getProducts = (page = 1) => {
+  isLoading.value = true
   axios
     .get(`${url}/api/${path}/admin/products?page=${page}`)
     .then((res) => {
       products.data = res.data.products
       pagination.data = res.data.pagination
+      isLoading.value = false
     })
     .catch((err) => {
       alert('取得產品列表錯誤', err)
@@ -156,42 +163,50 @@ const checkToken = () => {
 }
 // 新增產品
 const createProduct = async (data = tempData.data) => {
+  isLoading.value = true
   let result = ''
   await axios
     .post(`${url}/api/${path}/admin/product`, { data })
     .then((res) => {
       result = res
+      isLoading.value = false
     })
     .catch((err) => {
       alert('新增產品錯誤', err)
+      isLoading.value = false
     })
   return result
 }
 
 // 編輯產品
 const editProduct = async (data = tempData.data) => {
+  isLoading.value = true
   let result = ''
   await axios
     .put(`${url}/api/${path}/admin/product/${tempData.data.id}`, { data })
     .then((res) => {
       result = res
+      isLoading.value = false
     })
     .catch((err) => {
       alert('編輯產品錯誤', err)
+      isLoading.value = false
     })
   return result
 }
 
 // 刪除商品
 const delProduct = async () => {
+  isLoading.value = true
   await axios
     .delete(`${url}/api/${path}/admin/product/${tempData.data.id}`)
     .then(() => {
-      bsDelProductModal.value.hide()
       getProducts()
+      bsDelProductModal.value.hide()
     })
     .catch((err) => {
       alert('刪除產品錯誤', err)
+      isLoading.value = false
     })
 }
 // 新增圖片按鈕
@@ -218,26 +233,28 @@ const delImg = (index) => {
 
 // 確認送出按鈕
 const submitBtn = async () => {
+  isLoading.value = false
   if (tempData.data.status === 'create') {
     try {
       const res = await createProduct()
       if (res.status === 200) {
-        bsProductModal.value.hide()
         getProducts()
+        bsProductModal.value.hide()
       }
     } catch (error) {
       alert('新增失敗', error)
+      isLoading.value = false
     }
   } else {
     try {
       const res = await editProduct()
       if (res.status === 200) {
-        bsProductModal.value.hide()
         getProducts()
+        bsProductModal.value.hide()
       }
     } catch (error) {
-      console.log(error)
-      alert('編輯失敗')
+      alert('編輯失敗', error)
+      isLoading.value = false
     }
   }
 }
