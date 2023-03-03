@@ -137,6 +137,7 @@ const delOrder = (item)=>{
     .delete(`${url}/api/${path}/admin/order/${item.id}`)
     .then(() => {
       isLoading.value = false;
+      delModalStatus.value = false;
       getOrders()
     })
     .catch((err) => {
