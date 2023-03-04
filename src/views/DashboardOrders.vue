@@ -59,6 +59,8 @@
       </template>
     </tbody>
   </table>
+  <Pagination :pagination="pagination" @emitChangePage = "getOrders"></Pagination>
+
   <OrderModal :modalStatus="modalStatus" :tempOrder="tempOrderData.data" @emitModalSataus = "openModal" @emitUpdatePaid="updatePaid"></OrderModal>
   <DelModal :modalStatus="delModalStatus" :tempOrder="tempOrderData.data" @emitModalSataus = "openDelOrderModal" @emitDelItem = "delOrder"></DelModal>
 </template>
@@ -66,6 +68,7 @@
 <script setup>
 import { ref, reactive, inject, onMounted } from 'vue'
 import Loading from 'vue-loading-overlay'
+import Pagination from '../components/ProductPagination.vue'
 import OrderModal from '../components/OrderModal.vue'
 import DelModal from '../components/DelModal.vue'
 
@@ -82,6 +85,8 @@ const orders = reactive({ data: {} })
 const modalStatus = ref(false)
 const delModalStatus = ref(false)
 const tempOrderData = reactive({ data: {} })
+// 頁碼變數
+const pagination = reactive({ data: {} })
 
 const openModal = (item) => {
   if(item === false){
@@ -108,6 +113,7 @@ const getOrders = (page = 1) => {
     .get(`${url}/api/${path}/admin/orders?${page}`)
     .then((res) => {
       orders.data = res.data.orders
+      pagination.data = res.data.pagination
       isLoading.value = false;
     })
     .catch((err) => {

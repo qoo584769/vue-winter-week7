@@ -48,7 +48,8 @@
       </tbody>
     </table>
 
-    <Pagination :pagination="pagination" :get-products="getProducts"></Pagination>
+    <!-- <Pagination :pagination="pagination" :get-products="getProducts"></Pagination> -->
+    <Pagination :pagination="pagination" @emitChangePage = "getProducts"></Pagination>
   </div>
   <!-- Modal -->
   <div
